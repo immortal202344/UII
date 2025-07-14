@@ -205,6 +205,119 @@ local Slider = Tab:CreateSlider({
     end
 })
 
+local Toggle = Tab:CreateToggle({
+    Name = "Ускорение при прыжке",
+    CurrentValue = false,
+    Flag = "JumpSpeedBoost",
+    Callback = function(Enabled)
+        -- Настройки
+        local BASE_SPEED = 16
+        local MAX_SPEED = 32
+        local SPEED_INCREMENT = 1
+        local BOOST_INTERVAL = 0.2
+        local JUMP_KEY = Enum.KeyCode.Space
+
+        -- Системные сервисы
+        local UserInputService = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+
+        -- Состояние
+        local isJumpHeld = false
+        local speedBoostConnection = nil
+        local currentSpeed = BASE_SPEED
+        local humanoid = nil
+        local inputBeganConnection = nil
+        local inputEndedConnection = nil
+        local characterAddedConnection = nil
+
+        -- Функция обновления скорости
+        local function updateSpeed()
+            while isJumpHeld and humanoid and humanoid.Parent and Enabled do
+                currentSpeed = math.min(currentSpeed + SPEED_INCREMENT, MAX_SPEED)
+                humanoid.WalkSpeed = currentSpeed
+                task.wait(BOOST_INTERVAL)
+            end
+        end
+
+        -- Инициализация персонажа
+        local function initCharacter()
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = BASE_SPEED
+                    currentSpeed = BASE_SPEED
+                end
+            end
+        end
+
+        -- Обработчики ввода
+        local function onInputBegan(input, gameProcessed)
+            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
+            if humanoid and humanoid.Parent then
+                isJumpHeld = true
+                currentSpeed = BASE_SPEED
+                if speedBoostConnection then
+                    speedBoostConnection:Disconnect()
+                end
+                speedBoostConnection = RunService.Heartbeat:Connect(updateSpeed)
+            end
+        end
+
+        local function onInputEnded(input, gameProcessed)
+            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
+            isJumpHeld = false
+            if speedBoostConnection then
+                speedBoostConnection:Disconnect()
+                speedBoostConnection = nil
+            end
+            if humanoid and humanoid.Parent then
+                humanoid.WalkSpeed = BASE_SPEED
+                currentSpeed = BASE_SPEED
+            end
+        end
+
+        -- Включение/выключение функционала
+        if Enabled then
+            -- Инициализация
+            initCharacter()
+            
+            -- Подключение обработчиков
+            inputBeganConnection = UserInputService.InputBegan:Connect(onInputBegan)
+            inputEndedConnection = UserInputService.InputEnded:Connect(onInputEnded)
+            characterAddedConnection = game.Players.LocalPlayer.CharacterAdded:Connect(initCharacter)
+        else
+            -- Отключение состояния
+            isJumpHeld = false
+            
+            -- Отключение соединений
+            if speedBoostConnection then
+                speedBoostConnection:Disconnect()
+                speedBoostConnection = nil
+            end
+            
+            if inputBeganConnection then
+                inputBeganConnection:Disconnect()
+                inputBeganConnection = nil
+            end
+            
+            if inputEndedConnection then
+                inputEndedConnection:Disconnect()
+                inputEndedConnection = nil
+            end
+            
+            if characterAddedConnection then
+                characterAddedConnection:Disconnect()
+                characterAddedConnection = nil
+            end
+            
+            -- Сброс скорости
+            if humanoid and humanoid.Parent then
+                humanoid.WalkSpeed = BASE_SPEED
+            end
+        end
+    end
+})
 
 local Section = Tab:CreateSection("MainTabs")
 
