@@ -134,35 +134,43 @@ local Input = Tab:CreateInput({
    end,
 })
 
+-- Define spinSpeed at a higher scope so both toggle and slider can access it
+local spinSpeed = 10
+local spinConnection = nil
 
-local Toggle = Tab:CreateToggle({
-   Name = "Toggle Example",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(D)
+local function startSpinning()
+    local character = game.Players.LocalPlayer.Character
+    if not character then return end
+    
+    local rootPart = character:WaitForChild("HumanoidRootPart", 1)
+    if not rootPart then
+        warn("HumanoidRootPart not found!")
+        return
+    end
+    
+    -- Disconnect any existing connection to prevent duplicates
+    if spinConnection then
+        spinConnection:Disconnect()
+    end
+    
+    spinConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed * deltaTime * 60), 0)
+    end)
+end
+
+local function stopSpinning()
+    if spinConnection then
+        spinConnection:Disconnect()
+        spinConnection = nil
+    end
+end
+
+-- Create the toggle
 local Toggle = Tab:CreateToggle({
     Name = "Spin Character",
     CurrentValue = false,
     Flag = "SpinToggle",
     Callback = function(Enabled)
-        local spinSpeed = s -- Default speed (adjust as needed)
-        local spinConnection = nil
-        
-        local function startSpinning()
-            local character = game.Players.LocalPlayer.Character
-            if not character then return end
-            
-            local rootPart = character:WaitForChild("HumanoidRootPart", 1) -- Wait 2 seconds max
-            if not rootPart then
-                warn("HumanoidRootPart not found!")
-                return
-            end
-            
-            spinConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
-                rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed * deltaTime * 60), 0)
-            end)
-        end
-
         if Enabled then
             -- Handle existing character
             if game.Players.LocalPlayer.Character then
@@ -170,66 +178,32 @@ local Toggle = Tab:CreateToggle({
             end
             -- Set up future characters
             game.Players.LocalPlayer.CharacterAdded:Connect(function()
-                if Toggle.CurrentValue then -- Only spin if still enabled
+                if Toggle.CurrentValue then
                     startSpinning()
                 end
             end)
         else
-            if spinConnection then
-                spinConnection:Disconnect()
-                spinConnection = nil
-            end
+            stopSpinning()
         end
     end
-   end,
 })
 
+-- Create the speed slider
 local Slider = Tab:CreateSlider({
-   Name = "Slider Example",
-   Range = {0, 100},
-   Increment = 10,
-   Suffix = "Bananas",
-   CurrentValue = 10,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(s)
-        local spinSpeed = s -- Default speed (adjust as needed)
-        local spinConnection = nil
-        
-        local function startSpinning()
-            local character = game.Players.LocalPlayer.Character
-            if not character then return end
-            
-            local rootPart = character:WaitForChild("HumanoidRootPart", 1) -- Wait 2 seconds max
-            if not rootPart then
-                warn("HumanoidRootPart not found!")
-                return
-            end
-            
-            spinConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
-                rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed * deltaTime * 60), 0)
-            end)
-        end
-
-        if Enabled then
-            -- Handle existing character
-            if game.Players.LocalPlayer.Character then
-                startSpinning()
-            end
-            -- Set up future characters
-            game.Players.LocalPlayer.CharacterAdded:Connect(function()
-                if Toggle.CurrentValue then -- Only spin if still enabled
-                    startSpinning()
-                end
-            end)
-        else
-            if spinConnection then
-                spinConnection:Disconnect()
-                spinConnection = nil
-            end
+    Name = "Spin Speed",
+    Range = {1, 100},
+    Increment = 1,
+    Suffix = "° per second",
+    CurrentValue = spinSpeed,
+    Flag = "SpinSpeed",
+    Callback = function(Value)
+        spinSpeed = Value
+        -- If spinning is active, restart with new speed
+        if Toggle.CurrentValue then
+            startSpinning()
         end
     end
-			end,
-			})
+})
 
 
 local Section = Tab:CreateSection("MainTabs")
