@@ -134,6 +134,38 @@ local Input = Tab:CreateInput({
    end,
 })
 
+local Slider = Tab:CreateSlider({
+   Name = "Slider Example",
+   Range = {0, 100},
+   Increment = 10,
+   Suffix = "Bananas",
+   CurrentValue = 10,
+   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(s)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local spinning = true
+local spinSpeed = s
+
+	spinSpeed = tonumber(s) or 0
+	if spinSpeed > 0 then
+		spinning = true
+	end
+
+game:GetService("RunService").RenderStepped:Connect(function()
+	if spinning and character and character:FindFirstChild("HumanoidRootPart") then
+		character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+	end
+end)
+   end,
+})
+
+
+
 local Section = Tab:CreateSection("MainTabs")
 
 local Slider = Tab:CreateSlider({
@@ -432,7 +464,7 @@ p.Parent = workspace
 p.Locked = true
 p.BrickColor = BrickColor.new("White")
 p.BrickColor = BrickColor.new(104)
-local pcolor = Color3.fromRGB(173, 216, 230)
+local pcolor = Color3.fromRGB(255, 0, 137)
 p.Size = Vector3.new(8, 1.2, 8)
 p.Anchored = true
 local m = Instance.new("CylinderMesh")
@@ -974,7 +1006,7 @@ local Tab = Window:CreateTab("Settings/Credits", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("Credits")
 
 local Label = Tab:CreateLabel("Created by Immortal")
-local Label = Tab:CreateLabel("Version 0.01 ALPHA")
+local Label = Tab:CreateLabel("Version 0.02 ALPHA")
 
 local Section = Tab:CreateSection("Settings")
 
