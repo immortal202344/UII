@@ -1,3 +1,4 @@
+loadstring(game:HttpGet('https://sirius.menu/sirius'))()
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Rayfield",
@@ -205,120 +206,6 @@ local Slider = Tab:CreateSlider({
     end
 })
 
-local Toggle = Tab:CreateToggle({
-    Name = "Ускорение при прыжке",
-    CurrentValue = false,
-    Flag = "JumpSpeedBoost",
-    Callback = function(Enabled)
-        -- Настройки
-        local BASE_SPEED = 16
-        local MAX_SPEED = 32
-        local SPEED_INCREMENT = 1
-        local BOOST_INTERVAL = 0.2
-        local JUMP_KEY = Enum.KeyCode.Space
-
-        -- Системные сервисы
-        local UserInputService = game:GetService("UserInputService")
-        local RunService = game:GetService("RunService")
-
-        -- Состояние
-        local isJumpHeld = false
-        local speedBoostConnection = nil
-        local currentSpeed = BASE_SPEED
-        local humanoid = nil
-        local inputBeganConnection = nil
-        local inputEndedConnection = nil
-        local characterAddedConnection = nil
-
-        -- Функция обновления скорости
-        local function updateSpeed()
-            while isJumpHeld and humanoid and humanoid.Parent and Enabled do
-                currentSpeed = math.min(currentSpeed + SPEED_INCREMENT, MAX_SPEED)
-                humanoid.WalkSpeed = currentSpeed
-                task.wait(BOOST_INTERVAL)
-            end
-        end
-
-        -- Инициализация персонажа
-        local function initCharacter()
-            local character = game.Players.LocalPlayer.Character
-            if character then
-                humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.WalkSpeed = BASE_SPEED
-                    currentSpeed = BASE_SPEED
-                end
-            end
-        end
-
-        -- Обработчики ввода
-        local function onInputBegan(input, gameProcessed)
-            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
-            if humanoid and humanoid.Parent then
-                isJumpHeld = true
-                currentSpeed = BASE_SPEED
-                if speedBoostConnection then
-                    speedBoostConnection:Disconnect()
-                end
-                speedBoostConnection = RunService.Heartbeat:Connect(updateSpeed)
-            end
-        end
-
-        local function onInputEnded(input, gameProcessed)
-            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
-            isJumpHeld = false
-            if speedBoostConnection then
-                speedBoostConnection:Disconnect()
-                speedBoostConnection = nil
-            end
-            if humanoid and humanoid.Parent then
-                humanoid.WalkSpeed = BASE_SPEED
-                currentSpeed = BASE_SPEED
-            end
-        end
-
-        -- Включение/выключение функционала
-        if Enabled then
-            -- Инициализация
-            initCharacter()
-            
-            -- Подключение обработчиков
-            inputBeganConnection = UserInputService.InputBegan:Connect(onInputBegan)
-            inputEndedConnection = UserInputService.InputEnded:Connect(onInputEnded)
-            characterAddedConnection = game.Players.LocalPlayer.CharacterAdded:Connect(initCharacter)
-        else
-            -- Отключение состояния
-            isJumpHeld = false
-            
-            -- Отключение соединений
-            if speedBoostConnection then
-                speedBoostConnection:Disconnect()
-                speedBoostConnection = nil
-            end
-            
-            if inputBeganConnection then
-                inputBeganConnection:Disconnect()
-                inputBeganConnection = nil
-            end
-            
-            if inputEndedConnection then
-                inputEndedConnection:Disconnect()
-                inputEndedConnection = nil
-            end
-            
-            if characterAddedConnection then
-                characterAddedConnection:Disconnect()
-                characterAddedConnection = nil
-            end
-            
-            -- Сброс скорости
-            if humanoid and humanoid.Parent then
-                humanoid.WalkSpeed = BASE_SPEED
-            end
-        end
-    end
-})
-
 local Section = Tab:CreateSection("MainTabs")
 
 local Slider = Tab:CreateSlider({
@@ -344,6 +231,114 @@ local Slider = Tab:CreateSlider({
 game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
    end,
 })
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+-- UI Toggle (добавьте в вашу UI систему)
+local Toggle = Tab:CreateToggle({
+    Name = "Bunnyhop",
+    CurrentValue = false,
+    Flag = "AirBoostToggle",
+    Callback = function(Value)
+        -- Включаем/выключаем систему ускорения
+        _G.AirBoostEnabled = Value
+    end
+})
+
+-- Основные настройки
+local BASE_WALK_SPEED = 16
+local AIR_BOOST_SPEED = 40
+local BOOST_FORCE = 90
+local BOOST_COOLDOWN = 0.1
+local JUMP_POWER = 50
+
+-- Инициализация персонажа
+local function setupCharacter(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    
+    humanoid.WalkSpeed = BASE_WALK_SPEED
+    humanoid.JumpPower = JUMP_POWER
+    
+    local isSpacePressed = false
+    local isGrounded = false
+    local lastBoostTime = 0
+
+    -- Проверка земли
+    local function checkIfGrounded()
+        if not rootPart then return false end
+        
+        local rayOrigin = rootPart.Position
+        local rayDirection = Vector3.new(0, -3.5, 0)
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterDescendantsInstances = {character}
+        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+        
+        return workspace:Raycast(rayOrigin, rayDirection, raycastParams) ~= nil
+    end
+
+    -- Обновление скорости
+    local function updateSpeed()
+        if not humanoid then return end
+        
+        if isSpacePressed and _G.AirBoostEnabled then
+            humanoid.WalkSpeed = isGrounded and BASE_WALK_SPEED or AIR_BOOST_SPEED
+        else
+            humanoid.WalkSpeed = BASE_WALK_SPEED
+        end
+    end
+
+    -- Система ускорения
+    local function boostLoop()
+        while isSpacePressed and humanoid and rootPart and _G.AirBoostEnabled do
+            isGrounded = checkIfGrounded()
+            updateSpeed()
+            
+            if not isGrounded and os.clock() - lastBoostTime > BOOST_COOLDOWN then
+                local direction = rootPart.CFrame.LookVector
+                rootPart:ApplyImpulse(direction * BOOST_FORCE)
+                lastBoostTime = os.clock()
+            end
+            
+            task.wait()
+        end
+    end
+
+    -- Обработка ввода
+    local spaceConnection
+    spaceConnection = UIS.InputBegan:Connect(function(input, gameProcessed)
+        if input.KeyCode == Enum.KeyCode.Space and not gameProcessed then
+            isSpacePressed = true
+            if _G.AirBoostEnabled then
+                boostLoop()
+            end
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.Space then
+            isSpacePressed = false
+            updateSpeed()
+        end
+    end)
+
+    -- Очистка при смерти
+    humanoid.Died:Connect(function()
+        spaceConnection:Disconnect()
+    end)
+end
+
+-- Инициализация
+player.CharacterAdded:Connect(setupCharacter)
+if player.Character then
+    setupCharacter(player.Character)
+end
+
+-- По умолчанию включено
+_G.AirBoostEnabled = true
+
 
 local UserInputService = game:GetService("UserInputService")
 local jumpConnection = nil  -- Храним соединение здесь
@@ -517,103 +512,6 @@ player.CharacterAdded:Connect(function(newCharacter)
 end)
    end,
 })  
-
-local Toggle = Tab:CreateToggle({
-    Name = "Bunnyhop",
-    CurrentValue = false,
-    Flag = "JumpSpeedBoost",
-    Callback = function(Enabled)
-        -- Настройки
-        local BASE_SPEED = 16
-        local MAX_SPEED = 56
-        local SPEED_INCREMENT = 1
-        local BOOST_INTERVAL = 0.2
-        local JUMP_KEY = Enum.KeyCode.Space
-
-        -- Системные сервисы
-        local UserInputService = game:GetService("UserInputService")
-        local RunService = game:GetService("RunService")
-
-        -- Состояние
-        local isJumpHeld = false
-        local speedBoostConnection = nil
-        local currentSpeed = BASE_SPEED
-        local humanoid = nil
-
-        -- Функция обновления скорости
-        local function updateSpeed()
-            while isJumpHeld and humanoid and humanoid.Parent and Enabled do
-                currentSpeed = math.min(currentSpeed + SPEED_INCREMENT, MAX_SPEED)
-                humanoid.WalkSpeed = currentSpeed
-                task.wait(BOOST_INTERVAL)
-            end
-        end
-
-        -- Инициализация персонажа
-        local function initCharacter()
-            local character = game.Players.LocalPlayer.Character
-            if character then
-                humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.WalkSpeed = BASE_SPEED
-                    currentSpeed = BASE_SPEED
-                end
-            end
-        end
-
-        -- Обработчики ввода
-        local function onInputBegan(input, gameProcessed)
-            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
-            if humanoid and humanoid.Parent then
-                isJumpHeld = true
-                currentSpeed = BASE_SPEED
-                speedBoostConnection = RunService.Heartbeat:Connect(updateSpeed)
-            end
-        end
-
-        local function onInputEnded(input, gameProcessed)
-            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
-            isJumpHeld = false
-            if speedBoostConnection then
-                speedBoostConnection:Disconnect()
-                speedBoostConnection = nil
-            end
-            if humanoid and humanoid.Parent then
-                humanoid.WalkSpeed = BASE_SPEED
-                currentSpeed = BASE_SPEED
-            end
-        end
-
-        -- Включение/выключение функционала
-        if Enabled then
-            initCharacter()
-            UserInputService.InputBegan:Connect(onInputBegan)
-            UserInputService.InputEnded:Connect(onInputEnded)
-            
-            game.Players.LocalPlayer.CharacterAdded:Connect(function()
-                initCharacter()
-            end)
-        else
-            -- При выключении сбрасываем всё
-            isJumpHeld = false
-            if speedBoostConnection then
-                speedBoostConnection:Disconnect()
-                speedBoostConnection = nil
-            end
-            if humanoid and humanoid.Parent then
-                humanoid.WalkSpeed = BASE_SPEED
-            end
-            
-            -- Отключаем обработчики
-            UserInputService.InputBegan:Disconnect(onInputBegan)
-            UserInputService.InputEnded:Disconnect(onInputEnded)
-        end
-    end
-})
-
-
-
-
 
 local Button = Tab:CreateButton({
    Name = "AntiFling",
