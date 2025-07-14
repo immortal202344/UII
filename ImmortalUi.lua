@@ -140,23 +140,47 @@ local Toggle = Tab:CreateToggle({
    CurrentValue = false,
    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
    Callback = function(D)
- if d then
-local spinning = true
-local spinSpeed = s
+local Toggle = Tab:CreateToggle({
+    Name = "Spin Character",
+    CurrentValue = false,
+    Flag = "SpinToggle",
+    Callback = function(Enabled)
+        local spinSpeed = s -- Default speed (adjust as needed)
+        local spinConnection = nil
+        
+        local function startSpinning()
+            local character = game.Players.LocalPlayer.Character
+            if not character then return end
+            
+            local rootPart = character:WaitForChild("HumanoidRootPart", 1) -- Wait 2 seconds max
+            if not rootPart then
+                warn("HumanoidRootPart not found!")
+                return
+            end
+            
+            spinConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+                rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed * deltaTime * 60), 0)
+            end)
+        end
 
-	spinSpeed = tonumber(s) or 0
-	if spinSpeed > 0 then
-		spinning = true
-	end
-
-game:GetService("RunService").RenderStepped:Connect(function()
-	if spinning and character and character:FindFirstChild("HumanoidRootPart") then
-		character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
-	end
-end)
-
-			else 
-spinning = false
+        if Enabled then
+            -- Handle existing character
+            if game.Players.LocalPlayer.Character then
+                startSpinning()
+            end
+            -- Set up future characters
+            game.Players.LocalPlayer.CharacterAdded:Connect(function()
+                if Toggle.CurrentValue then -- Only spin if still enabled
+                    startSpinning()
+                end
+            end)
+        else
+            if spinConnection then
+                spinConnection:Disconnect()
+                spinConnection = nil
+            end
+        end
+    end
    end,
 })
 
@@ -168,13 +192,43 @@ local Slider = Tab:CreateSlider({
    CurrentValue = 10,
    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
    Callback = function(s)
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+        local spinSpeed = s -- Default speed (adjust as needed)
+        local spinConnection = nil
+        
+        local function startSpinning()
+            local character = game.Players.LocalPlayer.Character
+            if not character then return end
+            
+            local rootPart = character:WaitForChild("HumanoidRootPart", 1) -- Wait 2 seconds max
+            if not rootPart then
+                warn("HumanoidRootPart not found!")
+                return
+            end
+            
+            spinConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+                rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed * deltaTime * 60), 0)
+            end)
+        end
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-local spinSpeed = s
-
+        if Enabled then
+            -- Handle existing character
+            if game.Players.LocalPlayer.Character then
+                startSpinning()
+            end
+            -- Set up future characters
+            game.Players.LocalPlayer.CharacterAdded:Connect(function()
+                if Toggle.CurrentValue then -- Only spin if still enabled
+                    startSpinning()
+                end
+            end)
+        else
+            if spinConnection then
+                spinConnection:Disconnect()
+                spinConnection = nil
+            end
+        end
+    end
+			end,
 			})
 
 
