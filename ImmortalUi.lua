@@ -5,7 +5,7 @@ local Window = Rayfield:CreateWindow({
    LoadingSubtitle = "by Immortal",
    ConfigurationSaving = {
       Enabled = false,
-      FolderName = nil, -- Create a custom folder for your hub/game
+      FolderName = ImmortalUI, -- Create a custom folder for your hub/game
       FileName = "RayFlield"
    },
    Discord = {
@@ -506,73 +506,6 @@ enableCollisions()
 end,
 })
 
-local Tab = Window:CreateTab("Misc", 4483362458) -- Title, Image
-local Section = Tab:CreateSection("Character")
-
-local Button = Tab:CreateButton({
-   Name = "Reset",
-   Callback = function()
-    game.workspace[game.Players.LocalPlayer.Name].Head:Destroy()
-end,
-})  
-
-local Button = Tab:CreateButton({
-   Name = "Destroy shirt and paints",
-   Callback = function()
-game.Players.LocalPlayer.Character.Shirt:destroy()
-game.Players.LocalPlayer.Character.Pants:destroy()
-end,
-})  
-
-local Section = Tab:CreateSection("Tools")
-
-local Button = Tab:CreateButton({
-   Name = "JerkOff (r6)",
-   Callback = function()
-loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))("Spider Script")
-end,
-})  
-
-
-local Button = Tab:CreateButton({
-   Name = "Click TP",
-   Callback = function()
-mouse = game.Players.LocalPlayer:GetMouse()
-tool = Instance.new("Tool")
-tool.RequiresHandle = false
-tool.Name = "Click Teleport"
-tool.Activated:connect(function()
-local pos = mouse.Hit+Vector3.new(0,2.5,0)
-pos = CFrame.new(pos.X,pos.Y,pos.Z)
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
-end)
-tool.Parent = game.Players.LocalPlayer.Backpack
-end,
-})  
-
-local Section = Tab:CreateSection("Scripts")
-
-local Button = Tab:CreateButton({
-   Name = "Infinite Yield",
-   Callback = function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-end,
-})  
-
-local Button = Tab:CreateButton({
-   Name = "System Broken",
-   Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
-end,
-})  
-
-
-local Button = Tab:CreateButton({
-   Name = "Dance (r6)",
-   Callback = function()
-loadstring(game:HttpGet("https://gist.githubusercontent.com/lolidkwhy678/a90cf7ad8a55f958c30a5fd9cb99ec37/raw/e65af309c9a7b0ee2d36b36ae637a84c438cd534/Emote%2520script"))()
-end,
-})  
 
 local Tab = Window:CreateTab("Visual", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("WallHack")
@@ -614,19 +547,6 @@ local Button = Tab:CreateButton({
    end,
 })  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 local Section = Tab:CreateSection("Visual")
 
 local Slider = Tab:CreateSlider({
@@ -653,43 +573,7 @@ local Slider = Tab:CreateSlider({
     game.Players.LocalPlayer.CameraMaxZoomDistance = s
 end,
 })
-
-
-local Button = Tab:CreateButton({
-   Name = "Moon Sky",
-   Callback = function()
-local sky = Instance.new("Sky")
-sky.Name = "ColorfulSky"
-sky.SkyboxBk = "rbxassetid://159454299"
-sky.SkyboxDn = "rbxassetid://159454296"
-sky.SkyboxFt = "rbxassetid://159454293"
-sky.SkyboxLf = "rbxassetid://159454286"
-sky.SkyboxRt = "rbxassetid://159454300"
-sky.SkyboxUp = "rbxassetid://159454288"
-sky.SunAngularSize = 21
-sky.SunTextureId = ""
-sky.MoonTextureId = ""
-sky.Parent = game.Lighting
-
--- Texto no canto superior esquerdo
-local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SkyboxChangerLabelUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
-local nameLabel = Instance.new("TextLabel")
-nameLabel.Size = UDim2.new(0, 230, 0, 18)
-nameLabel.Position = UDim2.new(0, 10, 0, 8)
-nameLabel.BackgroundTransparency = 1
-nameLabel.Text = "Sky box changer made by avasco3"
-nameLabel.TextColor3 = Color3.new(1, 1, 1)
-nameLabel.Font = Enum.Font.Code
-nameLabel.TextSize = 13
-nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-nameLabel.Parent = screenGui
-end,
-})  
+ 
 
 local Button = Tab:CreateButton({
    Name = "Ghost",
@@ -762,15 +646,27 @@ end
 local Button = Tab:CreateButton({
    Name = "Rainbow Character",
    Callback = function()
-		presets = {"Bright red","Bright yellow","Bright orange","Bright violet","Bright blue","Bright bluish green","Bright green"}
+	local presets = {
+    "Bright red",
+    "Bright yellow",
+    "Bright orange",
+    "Bright violet",
+    "Bright blue",
+    "Bright bluish green",
+    "Bright green"
+}
+
 while true do
-wait(0.5)
-ye = game.Workspace[game.Players.LocalPlayer.Name]:GetChildren()
-for i,v in pairs(ye) do
-if v.className == "Part" then
-v.BrickColor = BrickColor.new(presets[math.random(1,#presets)])
-end
-end
+    wait(0.5)
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        -- Проверяем все части персонажа
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.BrickColor = BrickColor.new(presets[math.random(1, #presets)])
+            end
+        end
+    end
 end
    end,
 }) 
@@ -950,7 +846,104 @@ local ColorPicker = Tab:CreateColorPicker({
 end
 })
 
-local Tab = Window:CreateTab("Weather", 4483362458) -- Title, Image
+local Tab = Window:CreateTab("Misc", 4483362458) -- Title, Image
+local Section = Tab:CreateSection("Character")
+
+local Button = Tab:CreateButton({
+   Name = "Reset",
+   Callback = function()
+    game.workspace[game.Players.LocalPlayer.Name].Head:Destroy()
+end,
+})  
+
+local Button = Tab:CreateButton({
+   Name = "Destroy shirt and paints",
+   Callback = function()
+game.Players.LocalPlayer.Character.Shirt:destroy()
+game.Players.LocalPlayer.Character.Pants:destroy()
+end,
+})  
+
+local Section = Tab:CreateSection("Tools")
+
+local Button = Tab:CreateButton({
+   Name = "JerkOff (r6)",
+   Callback = function()
+loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))("Spider Script")
+end,
+})  
+
+local Button = Tab:CreateButton({
+   Name = "Click TP",
+   Callback = function()
+mouse = game.Players.LocalPlayer:GetMouse()
+tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Click Teleport"
+tool.Activated:connect(function()
+local pos = mouse.Hit+Vector3.new(0,2.5,0)
+pos = CFrame.new(pos.X,pos.Y,pos.Z)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
+end)
+tool.Parent = game.Players.LocalPlayer.Backpack
+end,
+})  
+
+local Section = Tab:CreateSection("Scripts")
+
+local Button = Tab:CreateButton({
+   Name = "Infinite Yield",
+   Callback = function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end,
+})  
+
+local Button = Tab:CreateButton({
+   Name = "System Broken",
+   Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+end,
+})  
+
+local Tab = Window:CreateTab("Sky", 4483362458) -- Title, Image
+local Section = Tab:CreateSection("Sky Custom")
+
+local Button = Tab:CreateButton({
+   Name = "Moon Sky",
+   Callback = function()
+local sky = Instance.new("Sky")
+sky.Name = "ColorfulSky"
+sky.SkyboxBk = "rbxassetid://159454299"
+sky.SkyboxDn = "rbxassetid://159454296"
+sky.SkyboxFt = "rbxassetid://159454293"
+sky.SkyboxLf = "rbxassetid://159454286"
+sky.SkyboxRt = "rbxassetid://159454300"
+sky.SkyboxUp = "rbxassetid://159454288"
+sky.SunAngularSize = 21
+sky.SunTextureId = ""
+sky.MoonTextureId = ""
+sky.Parent = game.Lighting
+
+-- Texto no canto superior esquerdo
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SkyboxChangerLabelUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local nameLabel = Instance.new("TextLabel")
+nameLabel.Size = UDim2.new(0, 230, 0, 18)
+nameLabel.Position = UDim2.new(0, 10, 0, 8)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = ""
+nameLabel.TextColor3 = Color3.new(1, 1, 1)
+nameLabel.Font = Enum.Font.Code
+nameLabel.TextSize = 13
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.Parent = screenGui
+end,
+}) 
+
 local Section = Tab:CreateSection("Time")
 
 local Button = Tab:CreateButton({
