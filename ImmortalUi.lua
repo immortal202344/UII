@@ -191,8 +191,8 @@ local Toggle = Tab:CreateToggle({
 -- Create the speed slider
 local Slider = Tab:CreateSlider({
     Name = "Spin-Bot Speed",
-    Range = {0, 100},
-    Increment = 0,
+    Range = {1, 100},
+    Increment = 1,
     Suffix = "° per second",
     CurrentValue = spinSpeed,
     Flag = "SpinSpeed",
