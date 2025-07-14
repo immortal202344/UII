@@ -208,30 +208,6 @@ local Slider = Tab:CreateSlider({
 
 local Section = Tab:CreateSection("MainTabs")
 
-local Slider = Tab:CreateSlider({
-   Name = "WalkSpeed",
-   Range = {16, 300},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(s)
-game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
-   end,
-})
-
-local Slider = Tab:CreateSlider({
-   Name = "JumpPower",
-   Range = {50, 300},
-   Increment = 1,
-   Suffix = "Jump",
-   CurrentValue = 50,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(s)
-game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
-   end,
-})
-
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
@@ -389,131 +365,6 @@ game.Players.LocalPlayer.Character.Humanoid.HipHeight = s
 })
 
 local Button = Tab:CreateButton({
-   Name = "Fly on V",
-   Callback = function()
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local hrp = character:WaitForChild("HumanoidRootPart")
-
-local flying = false
-local speed = 50
-local keys = {
-    W = false,
-    A = false,
-    S = false,
-    D = false,
-    Space = false,
-    LeftShift = false
-}
-
--- Function to start/stop flying
-local function toggleFly()
-    flying = not flying
-    if flying then
-        -- Disable gravity
-        hrp.Anchored = true
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-    else
-        -- Re-enable gravity
-        hrp.Anchored = false
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-    end
-end
-
--- Handle key press events
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.V then
-        toggleFly()
-    elseif input.KeyCode == Enum.KeyCode.W then
-        keys.W = true
-    elseif input.KeyCode == Enum.KeyCode.A then
-        keys.A = true
-    elseif input.KeyCode == Enum.KeyCode.S then
-        keys.S = true
-    elseif input.KeyCode == Enum.KeyCode.D then
-        keys.D = true
-    elseif input.KeyCode == Enum.KeyCode.Space then
-        keys.Space = true
-    elseif input.KeyCode == Enum.KeyCode.LeftShift then
-        keys.LeftShift = true
-    end
-end)
-
--- Handle key release events
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.W then
-        keys.W = false
-    elseif input.KeyCode == Enum.KeyCode.A then
-        keys.A = false
-    elseif input.KeyCode == Enum.KeyCode.S then
-        keys.S = false
-    elseif input.KeyCode == Enum.KeyCode.D then
-        keys.D = false
-    elseif input.KeyCode == Enum.KeyCode.Space then
-        keys.Space = false
-    elseif input.KeyCode == Enum.KeyCode.LeftShift then
-        keys.LeftShift = false
-    end
-end)
-
--- Main flying loop
-game:GetService("RunService").RenderStepped:Connect(function()
-    if flying then
-        local moveDirection = Vector3.new(0, 0, 0)
-        local lookVector = workspace.CurrentCamera.CFrame.LookVector
-        local rightVector = workspace.CurrentCamera.CFrame.RightVector
-        
-        -- Calculate movement based on key presses
-        if keys.W then
-            moveDirection = moveDirection + lookVector
-        end
-        if keys.S then
-            moveDirection = moveDirection - lookVector
-        end
-        if keys.A then
-            moveDirection = moveDirection - rightVector
-        end
-        if keys.D then
-            moveDirection = moveDirection + rightVector
-        end
-        if keys.Space then
-            moveDirection = moveDirection + Vector3.new(0, 1, 0)
-        end
-        if keys.LeftShift then
-            moveDirection = moveDirection - Vector3.new(0, 1, 0)
-        end
-        
-        -- Normalize and apply movement
-        if moveDirection.Magnitude > 0 then
-            moveDirection = moveDirection.Unit
-            hrp.CFrame = hrp.CFrame + moveDirection * speed * game:GetService("RunService").RenderStepped:Wait()
-        end
-    end
-end)
-
-
-player.CharacterAdded:Connect(function(newCharacter)
-    character = newCharacter
-    humanoid = character:WaitForChild("Humanoid")
-    hrp = character:WaitForChild("HumanoidRootPart")
-    flying = false
-end)
-   end,
-})  
-
-local Button = Tab:CreateButton({
    Name = "AntiFling",
    Callback = function()
 
@@ -639,53 +490,6 @@ workspace.Gravity = s
    end,
 })
 
-local Toggle = Tab:CreateToggle({
-   Name = "Noclip",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(state)
-    if state then
-        local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-
-local function noclip()
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-end
-
-
-local function clip()
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-        end
-    end
-end
-
-noclip()
-
-
-    else
-        local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-
-local function enableCollisions()
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-        end
-    end
-end
-
-enableCollisions()
-
-    end
-end,
-})
-
 
 local Tab = Window:CreateTab("Visual", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("WallHack")
@@ -728,19 +532,6 @@ local Button = Tab:CreateButton({
 })  
 
 local Section = Tab:CreateSection("Visual")
-
-local Slider = Tab:CreateSlider({
-   Name = "Fov",
-   Range = {70, 120},
-   Increment = 1,
-   Suffix = "FieldOfView",
-   CurrentValue = 70,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-game.Workspace.Camera.FieldOfView = Value
-
-end,
-})
 
 local Slider = Tab:CreateSlider({
    Name = "Zoom",
@@ -1124,37 +915,11 @@ nameLabel.Parent = screenGui
 end,
 }) 
 
-local Section = Tab:CreateSection("Time")
-
-local Button = Tab:CreateButton({
-   Name = "Day and Night",
-   Callback = function()
-   -- The function that takes place when the button is pressed
-while wait(1) do
-game.Lighting:SetMinutesAfterMidnight(game.Lighting:GetMinutesAfterMidnight()+0.1)
-end
-   end,
-})  
-local lighting = game:GetService("Lighting")
-
-local Slider = Tab:CreateSlider({
-   Name = "Time Scaler",
-   Range = {0, 22},
-   Increment = 0.1,
-   Suffix = "time",
-   CurrentValue = 0,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(s)
-lighting.ClockTime = s
-   end,
-})
-
-
 local Tab = Window:CreateTab("Settings/Credits", 4483362458) -- Title, Image
 local Section = Tab:CreateSection("Credits")
 
 local Label = Tab:CreateLabel("Created by Immortal")
-local Label = Tab:CreateLabel("Version 0.02 ALPHA")
+local Label = Tab:CreateLabel("Version 1.16 Beta")
 
 local Section = Tab:CreateSection("Settings")
 
