@@ -19,8 +19,8 @@ local Window = Rayfield:CreateWindow({
       Subtitle = "Key System",
       Note = "Join Telegram chanel https://t.me/Xsoqqviperr",
       FileName = "Immortalll", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      SaveKey = false, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
       Key = {"ImmortalTheBest"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
@@ -404,6 +404,103 @@ player.CharacterAdded:Connect(function(newCharacter)
 end)
    end,
 })  
+
+local Toggle = Tab:CreateToggle({
+    Name = "Bunnyhop",
+    CurrentValue = false,
+    Flag = "JumpSpeedBoost",
+    Callback = function(Enabled)
+        -- Настройки
+        local BASE_SPEED = 16
+        local MAX_SPEED = 56
+        local SPEED_INCREMENT = 1
+        local BOOST_INTERVAL = 0.2
+        local JUMP_KEY = Enum.KeyCode.Space
+
+        -- Системные сервисы
+        local UserInputService = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+
+        -- Состояние
+        local isJumpHeld = false
+        local speedBoostConnection = nil
+        local currentSpeed = BASE_SPEED
+        local humanoid = nil
+
+        -- Функция обновления скорости
+        local function updateSpeed()
+            while isJumpHeld and humanoid and humanoid.Parent and Enabled do
+                currentSpeed = math.min(currentSpeed + SPEED_INCREMENT, MAX_SPEED)
+                humanoid.WalkSpeed = currentSpeed
+                task.wait(BOOST_INTERVAL)
+            end
+        end
+
+        -- Инициализация персонажа
+        local function initCharacter()
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = BASE_SPEED
+                    currentSpeed = BASE_SPEED
+                end
+            end
+        end
+
+        -- Обработчики ввода
+        local function onInputBegan(input, gameProcessed)
+            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
+            if humanoid and humanoid.Parent then
+                isJumpHeld = true
+                currentSpeed = BASE_SPEED
+                speedBoostConnection = RunService.Heartbeat:Connect(updateSpeed)
+            end
+        end
+
+        local function onInputEnded(input, gameProcessed)
+            if not Enabled or gameProcessed or input.KeyCode ~= JUMP_KEY then return end
+            isJumpHeld = false
+            if speedBoostConnection then
+                speedBoostConnection:Disconnect()
+                speedBoostConnection = nil
+            end
+            if humanoid and humanoid.Parent then
+                humanoid.WalkSpeed = BASE_SPEED
+                currentSpeed = BASE_SPEED
+            end
+        end
+
+        -- Включение/выключение функционала
+        if Enabled then
+            initCharacter()
+            UserInputService.InputBegan:Connect(onInputBegan)
+            UserInputService.InputEnded:Connect(onInputEnded)
+            
+            game.Players.LocalPlayer.CharacterAdded:Connect(function()
+                initCharacter()
+            end)
+        else
+            -- При выключении сбрасываем всё
+            isJumpHeld = false
+            if speedBoostConnection then
+                speedBoostConnection:Disconnect()
+                speedBoostConnection = nil
+            end
+            if humanoid and humanoid.Parent then
+                humanoid.WalkSpeed = BASE_SPEED
+            end
+            
+            -- Отключаем обработчики
+            UserInputService.InputBegan:Disconnect(onInputBegan)
+            UserInputService.InputEnded:Disconnect(onInputEnded)
+        end
+    end
+})
+
+
+
+
 
 local Button = Tab:CreateButton({
    Name = "AntiFling",
