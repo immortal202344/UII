@@ -134,20 +134,13 @@ local Input = Tab:CreateInput({
    end,
 })
 
-local Slider = Tab:CreateSlider({
-   Name = "Slider Example",
-   Range = {0, 100},
-   Increment = 10,
-   Suffix = "Bananas",
-   CurrentValue = 10,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(s)
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
+local Toggle = Tab:CreateToggle({
+   Name = "Toggle Example",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(D)
+ if d then
 local spinning = true
 local spinSpeed = s
 
@@ -161,9 +154,28 @@ game:GetService("RunService").RenderStepped:Connect(function()
 		character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
 	end
 end)
+
+			else 
+spinning = false
    end,
 })
 
+local Slider = Tab:CreateSlider({
+   Name = "Slider Example",
+   Range = {0, 100},
+   Increment = 10,
+   Suffix = "Bananas",
+   CurrentValue = 10,
+   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(s)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local spinSpeed = s
+
+			})
 
 
 local Section = Tab:CreateSection("MainTabs")
