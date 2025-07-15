@@ -1,6 +1,6 @@
-loadstring(game:HttpGet('https://sirius.menu/sirius'))()
-task.wait(1)
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+loadstring(game:HttpGet('https://sirius.menu/sirius'))()
 local Window = Rayfield:CreateWindow({
    Name = "Rayfield",
    LoadingTitle = "Rayfield Ui",
